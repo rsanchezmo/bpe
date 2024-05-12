@@ -1,2 +1,5 @@
-# Byte Pair Encoding Tokenizer [BPE]
-This is my own Python implementation of BPE algorithm based on Andrej Karpathy [minBPE](https://github.com/karpathy/minbpe).
+# Tokenizers
+This is my own Python implementation of some state-of-the-art text tokenizers for LLMs. 
+
+## Available Tokenizers
+1. Byte Pair Encoding [BPE]
