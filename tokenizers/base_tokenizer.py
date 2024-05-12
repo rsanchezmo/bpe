@@ -1,18 +1,19 @@
 from abc import ABC, abstractmethod
+from typing import List
 
 
 class BaseTokenizer(ABC):
 
     @abstractmethod
-    def train(self):
+    def train(self, dataset: str, vocab_size: int):
         ...
 
     @abstractmethod
-    def encode(self):
+    def encode(self, txt: str):
         ...
 
     @abstractmethod
-    def decode(self):
+    def decode(self, encoded: List[int]) -> str:
         ...
 
     @abstractmethod
