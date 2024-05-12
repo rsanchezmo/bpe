@@ -1,8 +1,10 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import List
 
 
-class BaseTokenizer(ABC):
+class BaseTokenizer:
+    def __init__(self):
+        self.vocab_size = 0
 
     @abstractmethod
     def train(self, dataset: str, vocab_size: int):

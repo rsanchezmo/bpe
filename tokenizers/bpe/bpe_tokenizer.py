@@ -6,6 +6,7 @@ from typing import List
 
 class BPETokenizer(BaseTokenizer):
     def __init__(self):
+        super().__init__()
         self.merges = {}
 
     def train(self, dataset: str, vocab_size: int):
@@ -41,6 +42,8 @@ class BPETokenizer(BaseTokenizer):
 
             encoded_list = new_list
 
+        self.vocab_size = vocab_size_value + 1
+
         return encoded_list
 
     def encode(self, txt: str) -> List[int]:
@@ -65,7 +68,21 @@ class BPETokenizer(BaseTokenizer):
         return utf8_encoded
 
     def decode(self, encoded: List[int]) -> str:
-        ...
+
+        # decode from last to first
+        for key, value in reversed(self.merges.items()):
+            decoded = []
+            i = 0
+            while i < len(encoded):
+                if i < len(encoded) - 1 and encoded[i] == value:
+                    decoded.append(key[0])
+                    decoded.append(key[1])
+                else:
+                    decoded.append(encoded[i])
+                i += 1
+            encoded = decoded
+
+        return bytes(decoded).decode('utf-8', errors='replace')
 
     def save(self):
         ...
@@ -76,7 +93,14 @@ class BPETokenizer(BaseTokenizer):
 
 if __name__ == '__main__':
     tokenizer = BPETokenizer()
-    print(tokenizer.train("aaabdaaabac", 300))
+    txt = "hola me llamo rodrigo y tu? ### ### for i in range():"
+    print('UTF-8 encoding size:', len(txt.encode('utf-8')))
+    tokenizer.train(txt, 300)
     print(tokenizer.merges)
-    print(max(tokenizer.merges.values())+1)
-    print(tokenizer.encode("aa"))
+    print(f'Vocab size: {tokenizer.vocab_size}')
+    encoded = tokenizer.encode(txt)
+    print(encoded)
+    print('Tokens size:', len(encoded))
+    decoded = tokenizer.decode(encoded)
+    print(decoded)
+    print(txt == decoded)
