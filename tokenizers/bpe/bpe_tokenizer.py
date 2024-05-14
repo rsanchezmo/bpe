@@ -1,13 +1,15 @@
 from tokenizers.base_tokenizer import BaseTokenizer
 from tokenizers.bpe.utils import get_consecutive_pairs, encode_utf8
-
+import json
 from typing import List
+from pathlib import Path
 
 
 class BPETokenizer(BaseTokenizer):
     def __init__(self):
         super().__init__()
         self.merges = {}
+        self.vocab = {i: bytes([i]) for i in range(256)}  # token id to byte mapping: e.g. {256: b'ab'}
 
     def train(self, dataset: str, vocab_size: int):
         """Trains the tokenizer using the BPE algorithm.
@@ -35,6 +37,7 @@ class BPETokenizer(BaseTokenizer):
                 if i < len(encoded_list) - 1 and encoded_list[i] == max_pair[0] and encoded_list[i+1] == max_pair[1]:
                     self.merges[max_pair] = vocab_size_value
                     new_list.append(vocab_size_value)
+                    self.vocab[vocab_size_value] = self.vocab[max_pair[0]] + self.vocab[max_pair[1]]
                     i += 1
                 else:
                     new_list.append(encoded_list[i])
@@ -68,26 +71,16 @@ class BPETokenizer(BaseTokenizer):
         return utf8_encoded
 
     def decode(self, encoded: List[int]) -> str:
-
-        # decode from last to first
-        for key, value in reversed(self.merges.items()):
-            decoded = []
-            i = 0
-            while i < len(encoded):
-                if i < len(encoded) - 1 and encoded[i] == value:
-                    decoded.append(key[0])
-                    decoded.append(key[1])
-                else:
-                    decoded.append(encoded[i])
-                i += 1
-            encoded = decoded
-
-        return bytes(decoded).decode('utf-8', errors='replace')
+        decoded = b"".join([self.vocab[i] for i in encoded])
+        return decoded.decode('utf-8', errors='replace')
 
     def save(self):
-        ...
+        """ saves model and vocab to disk """
+        with open('bpe_tokenizer.model', 'w') as model_file:
+            reversed_merges = {v: k for k, v in self.merges.items()}
+            json.dump(reversed_merges, model_file, indent=4)
 
-    def load(self):
+    def load(self, path: Path):
         ...
 
 
@@ -104,3 +97,7 @@ if __name__ == '__main__':
     decoded = tokenizer.decode(encoded)
     print(decoded)
     print(txt == decoded)
+    tokenizer.save()
+
+    tokenizer2 = BPETokenizer()
+    tokenizer2.load(Path('bpe_tokenizer.model'))

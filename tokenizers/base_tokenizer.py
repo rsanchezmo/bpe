@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from typing import List
+from pathlib import Path
 
 
 class BaseTokenizer:
@@ -23,5 +24,5 @@ class BaseTokenizer:
         ...
 
     @abstractmethod
-    def load(self):
+    def load(self, path: Path):
         ...
